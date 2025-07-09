@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DATE NAMAN TAYO PARANG AWA MO NA</title>
+<title>Date naman tayo inang yan</title>
 <style>
     body {
         display: flex;
@@ -72,6 +72,7 @@
     <button class="no-btn" onclick="sayNo()">NO</button>
 </div>
 
+<!-- Audio -->
 <audio id="happySound" src="HAPPY HAPPY HAPPY  TikTok sound effect.mp3"></audio>
 <audio id="sadSound" src="SAD - SOUND EFFECT.mp3"></audio>
 <audio id="tromboneSound" src="Alaala Nalang - Hambog Ng Sagpro Krew [ LYRICS ].mp3"></audio>
@@ -92,8 +93,19 @@ const questions = [
 ];
 
 function playSound(id) {
-    const audio = document.getElementById(id);
-    if(audio) { audio.currentTime = 0; audio.play(); }
+    const allSounds = ['happySound', 'sadSound', 'tromboneSound'];
+    allSounds.forEach(soundId => {
+        const audio = document.getElementById(soundId);
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+        }
+    });
+
+    const selectedAudio = document.getElementById(id);
+    if (selectedAudio) {
+        selectedAudio.play();
+    }
 }
 
 function sayYes() {
@@ -126,6 +138,7 @@ function sayNo() {
         endWithCoffin();
         return;
     }
+
     playSound('sadSound');
     sadness += 40;
     let r = Math.max(0, 252 - sadness);
