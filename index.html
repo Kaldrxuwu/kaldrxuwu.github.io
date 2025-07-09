@@ -34,9 +34,7 @@
         color: white;
         transition: transform 0.2s;
     }
-    button:hover {
-        transform: scale(1.1);
-    }
+    button:hover { transform: scale(1.1); }
     .yes-btn { background-color: #4CAF50; }
     .no-btn { background-color: #f44336; }
     .fade { animation: fadeIn 0.6s; }
@@ -79,109 +77,124 @@
 <audio id="tromboneSound" src="trombone.mp3"></audio>
 
 <script>
-    let step = 0;
-    let sadness = 0;
-    let afterDying = false;
-    let confettiInterval = null;
+let step = 0;
+let sadness = 0;
+let afterDying = false;
+let happyConfetti = null;
+let deathConfetti = null;
 
-    const questions = [
-        "Are you sure?",
-        "Give me a chance?",
-        "Pretty please?",
-        "I'll die if hindi mo ko pinagbigyan",
-        "Isa lang eh"
-    ];
+const questions = [
+    "Are you sure?",
+    "Give me a chance?",
+    "Pretty please?",
+    "I'll die if hindi mo ko pinagbigyan",
+    "Isa lang eh"
+];
 
-    function playSound(id) {
-        document.getElementById(id).currentTime = 0;
-        document.getElementById(id).play();
+function playSound(id) {
+    const audio = document.getElementById(id);
+    if(audio) { audio.currentTime = 0; audio.play(); }
+}
+
+function sayYes() {
+    stopDeathConfetti();
+    if (afterDying) {
+        document.body.style.backgroundColor = "#fcd1d1";
+        startHappyConfetti();
+        playSound('happySound');
+        showFinalMessage();
+        return;
     }
 
-    function sayYes() {
-        if (afterDying) {
-            showFinalMessage();
-            return;
-        }
-        if (step === 0 || step === 2 || step >= 3) {
-            startConfetti();
-            playSound('happySound');
-            showFinalMessage();
-        } else if (step === 1) {
-            step++;
-            updateQuestion(questions[step], "sige na nga", "ayoko nga eh");
-        }
+    if (step === 0) {
+        playSound('happySound');
+        startHappyConfetti();
+        showFinalMessage();
+    } else if (step === 1) {
+        step++;
+        updateQuestion(questions[step], "sige na nga", "ayoko nga eh");
+    } else if (step === 2 || step === 3 || step === 4) {
+        document.body.style.backgroundColor = "#fcd1d1";
+        playSound('happySound');
+        startHappyConfetti();
+        showFinalMessage();
     }
+}
 
-    function sayNo() {
-        if (afterDying) {
-            endWithCoffin();
-            return;
-        }
-
-        playSound('sadSound');
-        sadness += 40;
-        let r = Math.max(0, 252 - sadness);
-        let g = Math.max(0, 209 - sadness);
-        let b = Math.max(0, 209 - sadness);
-        document.body.style.backgroundColor = `rgb(${r},${g},${b})`;
-
-        if (step === 0) {
-            step = 1;
-            updateQuestion(questions[0]);
-        } else if (step === 1) {
-            step = 0;
-            updateQuestion("Would you date me?");
-        } else if (step === 2) {
-            step++;
-            updateQuestion(questions[step], "Sige na nga kulit mo", "Edi mamatay ka tang ina mo");
-        } else if (step === 3) {
-            step++;
-            updateQuestion(questions[step], "Sige, isang date lang", "Ano ba sabi nang ayoko");
-        } else if (step === 4) {
-            showDyingEffect();
-        }
+function sayNo() {
+    if (afterDying) {
+        endWithCoffin();
+        return;
     }
+    playSound('sadSound');
+    sadness += 40;
+    let r = Math.max(0, 252 - sadness);
+    let g = Math.max(0, 209 - sadness);
+    let b = Math.max(0, 209 - sadness);
+    document.body.style.backgroundColor = `rgb(${r},${g},${b})`;
 
-    function updateQuestion(newText, yesText = "YES", noText = "NO") {
-        const box = document.getElementById("box");
+    startDeathConfetti();
+
+    if (step === 0) {
+        step = 1;
+        updateQuestion(questions[0], "YES", "NO");
+    } else if (step === 1) {
+        step = 0;
+        updateQuestion("Would you date me?", "YES", "NO");
+    } else if (step === 2) {
+        step++;
+        updateQuestion(questions[step], "Sige na nga kulit mo", "Edi mamatay ka tang ina mo");
+    } else if (step === 3) {
+        step++;
+        updateQuestion(questions[step], "Sige, isang date lang", "Ano ba sabi nang ayoko");
+    } else if (step === 4) {
+        showDyingEffect();
+    }
+}
+
+function updateQuestion(text, yesText = "YES", noText = "NO") {
+    const box = document.getElementById("box");
+    box.innerHTML = `
+        <h2 class="fade">${text}</h2>
+        <button class="yes-btn" onclick="sayYes()">${yesText}</button>
+        <button class="no-btn" onclick="sayNo()">${noText}</button>
+    `;
+}
+
+function showFinalMessage() {
+    const box = document.getElementById("box");
+    box.innerHTML = `
+        <h2 class="fade">YUN OH, MESSAGE ME THE TIME AND DATE KUNG KELAN AS WELL AS SAAN MO GUSTO FIRST DATE NATIN! I LOVE YOU NA AGAD MY HONEY BUNCH SUGAR PLUM PUMPY-UMPY-UMPKIN!</h2>
+    `;
+}
+
+function showDyingEffect() {
+    const box = document.getElementById("box");
+    box.innerHTML = `<h2 class="dying">I’m dying... 😵💔</h2>`;
+    setTimeout(() => {
+        afterDying = true;
         box.innerHTML = `
-            <h2 class="fade">${newText}</h2>
-            <button class="yes-btn" onclick="sayYes()">${yesText}</button>
-            <button class="no-btn" onclick="sayNo()">${noText}</button>
+            <h2>Ayaw talaga? 😢</h2>
+            <button class="yes-btn" onclick="sayYes()">Changed my mind, sige na nga</button>
+            <button class="no-btn" onclick="sayNo()">Ayoko pa din inamo</button>
         `;
-    }
+    }, 3000);
+}
 
-    function showFinalMessage() {
-        clearInterval(confettiInterval);
-        const box = document.getElementById("box");
-        box.innerHTML = `
-            <h2 class="fade">YUN OH, MESSAGE ME THE TIME AND DATE KUNG KELAN AS WELL AS SAAN MO GUSTO FIRST DATE NATIN! I LOVE YOU NA AGAD MY HONEY BUNCH SUGAR PLUM PUMPY-UMPY-UMPKIN!</h2>
-        `;
-    }
+function endWithCoffin() {
+    document.body.style.backgroundColor = "#000";
+    const box = document.getElementById("box");
+    box.innerHTML = `<div class="coffin">⚰️</div>`;
+    playSound('tromboneSound');
+    stopHappyConfetti();
+    stopDeathConfetti();
+}
 
-    function showDyingEffect() {
-        const box = document.getElementById("box");
-        box.innerHTML = `<h2 class="dying">I’m dying... 😵💔</h2>`;
-        setTimeout(() => {
-            afterDying = true;
-            box.innerHTML = `
-                <h2>Ayaw talaga? 😢</h2>
-                <button class="yes-btn" onclick="sayYes()">Changed my mind, sige na nga</button>
-                <button class="no-btn" onclick="sayNo()">Ayoko pa din inamo</button>
-            `;
-        }, 3000);
-    }
-
-    function endWithCoffin() {
-        document.body.style.backgroundColor = "#000";
-        const box = document.getElementById("box");
-        box.innerHTML = `<div class="coffin">⚰️</div>`;
-        playSound('tromboneSound');
-        clearInterval(confettiInterval);
-    }
-
-    function startConfetti() {
-        confettiInterval = setInterval(() => {
+// Confetti functions
+function startHappyConfetti() {
+    stopDeathConfetti();
+    if (!happyConfetti) {
+        happyConfetti = setInterval(() => {
             const confetti = document.createElement('div');
             confetti.classList.add('confetti');
             confetti.style.left = Math.random() * 100 + 'vw';
@@ -191,6 +204,35 @@
             setTimeout(() => confetti.remove(), 3000);
         }, 200);
     }
+}
+
+function stopHappyConfetti() {
+    if (happyConfetti) {
+        clearInterval(happyConfetti);
+        happyConfetti = null;
+    }
+}
+
+function startDeathConfetti() {
+    if (!deathConfetti) {
+        deathConfetti = setInterval(() => {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+            confetti.innerText = Math.random() > 0.5 ? '💀' : '⚰️';
+            document.body.appendChild(confetti);
+            setTimeout(() => confetti.remove(), 3000);
+        }, 200);
+    }
+}
+
+function stopDeathConfetti() {
+    if (deathConfetti) {
+        clearInterval(deathConfetti);
+        deathConfetti = null;
+    }
+}
 </script>
 </body>
 </html>
